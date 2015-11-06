@@ -13,8 +13,14 @@ int main()
 
 	fd = open(myfifo, O_RDONLY);
 	read(fd, buf, MAX_BUF);
-	printf("Received: %s\n", buf);
-	close(fd);
 
+//	while(buf != "exit"){
+
+		if(strcmp(buf, "hi") == 0){
+
+			printf("Received: %s\n", buf);
+			close(fd);
+		}
+ //   }
 	return 0;
 }
