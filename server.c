@@ -5,6 +5,8 @@
 #include <string.h>
 #include <pthread.h>
 #include <semaphore.h>
+#include <math.h>
+#include <stdlib.h>
 
 #define MAX_BUF 1024
 
@@ -38,6 +40,9 @@ int main(int argc, char *argv[])
 }
 
 void serverListener(void *ptr){
+  while(1){
+	sem_wait(&mutex);		
+
 
 	int fd;
 	char * myfifo = "/tmp/myfifo";
@@ -47,13 +52,46 @@ void serverListener(void *ptr){
 	read(fd, buf, MAX_BUF);
 
 	//put mutex around the critical area
-	sem_wait(&mutex);
 	//then update buffer
 
 	int pid;
+	char msg[20];
 	int n = sscanf(buf, "%d", &pid);
+	int numDigitsPid;
+//	numDigitsPid =  floor(log10(abs(pid))) + 1;
+	numDigitsPid = 5;
+	printf("PID LENGTH %d\n", numDigitsPid);
 	printf("pid %d\n", pid);
 
+	
+	
+	char *as = &buf[numDigitsPid];
+	printf("%s", as);	
+
+	//make the string with correct path for client fifo pipe
+	
+	//parse pid int to str
+	char pidString[10];
+	sprintf(pidString, "%d", pid);
+	char * tmpPath = "/tmp/";
+	char clientPath[20];
+	strcat(clientPath, tmpPath);
+	strcat(clientPath,pidString);
+	printf("client path is %s\n", clientPath);
+	
+	//create fifo pipe for client
+	char clientBuf[MAX_BUF];
+	
+	mkfifo(clientPath, 0777);
+	int clientPipe = open(clientPath, O_WRONLY);
+	write(clientPipe, clientPath, sizeof(clientPath));
+	close(clientPipe);
+	unlink(clientPath);
+
+
+	printf("%s\n", msg);
 	//end the mutex
 	sem_post(&mutex);
+   }
+
 }
