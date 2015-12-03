@@ -28,27 +28,29 @@ int main(char **argv){
     return 0;
 	}
 
-
-	
-//opens working directory and prints out files and directories within directory
+//ls -l
+//Run when ls command is inputted by user
 	if(strcmp(str, "ls") == 0){
-
 		if ((dir = opendir (cwd)) != NULL) {
+			//iterates through directory while setting dirent structure
 			while ((ent = readdir (dir)) != NULL) {
 			    char *paren = "/";
 			    getcwd(cwd, sizeof(cwd));
 			    strcat(cwd, paren);
 			    strcat(cwd, ent->d_name);
 
+			    //sets up the stat structure
 			    if(stat(cwd, &fileStat) < 0){
 			    	return 1;
 			    }
 
+			    //sets up the format for the date string
 			    char buff[20];
 			    struct tm * timeinfo;
 			    timeinfo = localtime (&(fileStat.st_mtime));
 			    strftime(buff, 20, "%b %d %H:%M", timeinfo);
 
+			    //prints out permission info
 			    printf( (S_ISDIR(fileStat.st_mode)) ? "d" : "-");
 			    printf( (fileStat.st_mode & S_IRUSR) ? "r" : "-");
 			    printf( (fileStat.st_mode & S_IWUSR) ? "w" : "-");
