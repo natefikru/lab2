@@ -3,15 +3,21 @@
 #include <dirent.h>
 #include <errno.h>
 #include <unistd.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <string.h>
+#include <time.h>
 
 	DIR *dir;
 	struct dirent *ent;
+	struct stat fileStat;
 	char cwd[1024];
+	char str[100];
 
-int main(void){
+int main(char **argv){
 
-//TODO add command input prompt and determine what user input is
-
+	printf("Enter your command\n");
+	scanf("%s", str);
 
 //saves current working directory as variable cwd
 	if (getcwd(cwd, sizeof(cwd)) != NULL){
@@ -21,21 +27,53 @@ int main(void){
        perror("getcwd() error");
     return 0;
 	}
+
+
 	
 //opens working directory and prints out files and directories within directory
-//TODO implement the ls -l command showing long format of directory contents
-	if ((dir = opendir (cwd)) != NULL) {
-	  while ((ent = readdir (dir)) != NULL) {
-	    printf ("%s\n", ent->d_name);
-	  }
-	  closedir (dir);
-	} 
-	else {
-	  /* could not open directory */
-	  perror ("directory could not be opened\n");
-	  return EXIT_FAILURE;
-	}
+	if(strcmp(str, "ls") == 0){
 
+		if ((dir = opendir (cwd)) != NULL) {
+			while ((ent = readdir (dir)) != NULL) {
+			    char *paren = "/";
+			    getcwd(cwd, sizeof(cwd));
+			    strcat(cwd, paren);
+			    strcat(cwd, ent->d_name);
+
+			    if(stat(cwd, &fileStat) < 0){
+			    	return 1;
+			    }
+
+			    char buff[20];
+			    struct tm * timeinfo;
+			    timeinfo = localtime (&(fileStat.st_mtime));
+			    strftime(buff, 20, "%b %d %H:%M", timeinfo);
+
+			    printf( (S_ISDIR(fileStat.st_mode)) ? "d" : "-");
+			    printf( (fileStat.st_mode & S_IRUSR) ? "r" : "-");
+			    printf( (fileStat.st_mode & S_IWUSR) ? "w" : "-");
+			    printf( (fileStat.st_mode & S_IXUSR) ? "x" : "-");
+			    printf( (fileStat.st_mode & S_IRGRP) ? "r" : "-");
+			    printf( (fileStat.st_mode & S_IWGRP) ? "w" : "-");
+			    printf( (fileStat.st_mode & S_IXGRP) ? "x" : "-");
+			    printf( (fileStat.st_mode & S_IROTH) ? "r" : "-");
+			    printf( (fileStat.st_mode & S_IWOTH) ? "w" : "-");
+			    printf( (fileStat.st_mode & S_IXOTH) ? "x" : "-");
+			    printf(" ");
+			    printf("%d ", fileStat.st_uid);
+			    printf("%d ", fileStat.st_gid);
+			    printf("%zu ", fileStat.st_size);
+			    printf("%s ", buff);
+			    printf ("%s\n", ent->d_name);
+		  }
+		  closedir (dir);
+		} 
+		else {
+		  /* could not open directory */
+		  perror ("directory could not be opened\n");
+		  return EXIT_FAILURE;
+		}
+	}
 
 //TODO grep command
  
