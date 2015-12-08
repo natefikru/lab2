@@ -8,16 +8,18 @@
 #include <string.h>
 #include <time.h>
 
+	int getUserInput();
+	int lsCommand();
+	int findCommand();
+	int grepCommand();
+
 	DIR *dir;
 	struct dirent *ent;
 	struct stat fileStat;
 	char cwd[1024];
 	char str[100];
 
-int main(char **argv){
-
-	printf("Enter your command\n");
-	scanf("%s", str);
+int main(){
 
 //saves current working directory as variable cwd
 	if (getcwd(cwd, sizeof(cwd)) != NULL){
@@ -28,10 +30,50 @@ int main(char **argv){
     return 0;
 	}
 
+	int executionCode = getUserInput();
+	//ls
+	if (executionCode == 0){
+	   lsCommand();
+	}
+
+	//find
+	if (executionCode == 1){
+	    findCommand();
+	}
+
+	//grep
+
+	if (executionCode == 2){
+	   grepCommand();
+	}
+
+}
+
+
+//get user input
+int getUserInput(){
+	int returnCode = -1;
+	printf("Enter your command\n");
+	scanf("%s", str);
+	if (strcmp(str, "ls") == 0){
+	    returnCode = 0;
+        }
+	if (strcmp(str, "find")==0){
+	    returnCode = 1;
+	}
+	if(strcmp(str, "grep")==0){
+	    returnCode = 2;
+	}
+
+	return returnCode;
+}
+
+
+
 //ls -l
 //Run when ls command is inputted by user
-	if(strcmp(str, "ls") == 0){
-		if ((dir = opendir (cwd)) != NULL) {
+int lsCommand(){
+	if ((dir = opendir (cwd)) != NULL) {
 			//iterates through directory while setting dirent structure
 			while ((ent = readdir (dir)) != NULL) {
 			    char *paren = "/";
@@ -73,12 +115,24 @@ int main(char **argv){
 		else {
 		  /* could not open directory */
 		  perror ("directory could not be opened\n");
-		  return EXIT_FAILURE;
+//		  return EXIT_FAILURE;
 		}
 	}
 
 //TODO grep command
- 
+int grepCommand(){
+
+} 
  
 //TODO find command
+
+int findCommand(){
+printf("FIND CALLED\n");
+if ((dir = opendir (cwd)) != NULL) {
+			//iterates through directory while setting dirent structure
+
+
 }
+
+
+
