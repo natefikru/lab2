@@ -64,7 +64,6 @@ int getUserInput(){
 
 	printf("enter input\n");
 	scanf( "%s %s %s", arg1,arg2,arg3);
-	printf( "%s %s %s\n", arg1,arg2,arg3);
 
 	int returnCode = -1;
 	if (strcmp(arg1, "ls") == 0){
@@ -138,13 +137,10 @@ int grepCommand(){
 	char textFile[100];
 	char word[100];
 	int count = 0;
-
-
-
 	//combine file name with cwd
 	char *paren = "/";
 	strcat(cwd, paren);
-	strcat(cwd, arg2);
+	strcat(cwd, arg3);
 
 	FILE* file = fopen(cwd, "r");
 	char line[256];
