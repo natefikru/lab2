@@ -7,6 +7,7 @@
 #include <sys/types.h>
 #include <string.h>
 #include <time.h>
+#include <limits.h>
 
 	int getUserInput();
 	int lsCommand();
@@ -18,6 +19,14 @@
 	struct stat fileStat;
 	char cwd[1024];
 	char str[100];
+	char findStr[100];
+	const char *findPath;
+
+	int shouldTraverse = 1;
+
+	char arg1[40];
+	char arg2[40];
+	char arg3[40];
 
 int main(){
 
@@ -38,7 +47,7 @@ int main(){
 
 	//find
 	if (executionCode == 1){
-	    findCommand();
+	    traverseDir(cwd);
 	}
 
 	//grep
@@ -52,16 +61,20 @@ int main(){
 
 //get user input
 int getUserInput(){
+
+	printf("enter input\n");
+	scanf( "%s %s %s", arg1,arg2,arg3);
+	printf( "%s %s %s\n", arg1,arg2,arg3);
+
 	int returnCode = -1;
-	printf("Enter your command\n");
-	scanf("%s", str);
-	if (strcmp(str, "ls") == 0){
+	if (strcmp(arg1, "ls") == 0){
+
 	    returnCode = 0;
         }
-	if (strcmp(str, "find")==0){
+	if (strcmp(arg1, "find")==0){
 	    returnCode = 1;
 	}
-	if(strcmp(str, "grep")==0){
+	if(strcmp(arg1, "grep")==0){
 	    returnCode = 2;
 	}
 
@@ -122,17 +135,83 @@ int lsCommand(){
 //TODO grep command
 int grepCommand(){
 
-} 
- 
-//TODO find command
-
-int findCommand(){
-printf("FIND CALLED\n");
-if ((dir = opendir (cwd)) != NULL) {
-			//iterates through directory while setting dirent structure
+	char textFile[100];
+	char word[100];
+	int count = 0;
 
 
+
+	//combine file name with cwd
+	char *paren = "/";
+	strcat(cwd, paren);
+	strcat(cwd, arg2);
+
+	FILE* file = fopen(cwd, "r");
+	char line[256];
+
+	while(fgets(line, sizeof(line), file)){
+		if(strstr(line, arg2) != NULL){
+			printf("%d %s", count, line);
+		}
+		count++;
+	}
 }
+
+
+int traverseDir(const char *dir_name){
+    DIR * dir;
+    dir = opendir (dir_name);
+
+    //check for bad dir
+
+    if(!dir){
+	fprintf(stderr, "ERROR: CANNOT OPEN DIR\n");
+    }
+
+
+    while (shouldTraverse == 1) {
+        struct dirent * entry;
+        const char * d_name;
+
+        entry = readdir (dir);
+
+	//check to see if dir is empty, 
+        if (! entry) {
+            break;
+        }
+
+        d_name = entry->d_name;
+
+	if(strcmp(d_name, findStr) == 0)
+	{
+		printf("find hit \n");
+		findPath = dir_name;
+		printf("%s/%s\n" , findPath,d_name);
+	}
+
+
+        if (entry->d_type & DT_DIR) {
+            /* Check that the directory is not "d" or d's parent. */
+            
+            if (strcmp (d_name, "..") != 0 &&
+                strcmp (d_name, ".") != 0) {
+                int path_length;
+                char path[PATH_MAX];
+ 
+                path_length = snprintf (path, PATH_MAX,
+                                        "%s/%s", dir_name, d_name);
+                traverseDir(path);
+            }
+	}
+    }
+    /* After going through all the entries, close the directory. */
+    if (closedir (dir)) {
+        fprintf (stderr, "Could not close '%s': %s\n",
+                 dir_name, strerror (errno));
+        exit (EXIT_FAILURE);
+    }
+} 
+
 
 
 
